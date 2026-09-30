@@ -102,19 +102,3 @@ npm run dev
 ```
 Visit the local server address provided by Vite in your browser.
 
-## Notes for Production Deployment
-
-Deploying this application requires specific architectural considerations due to the nature of local vector storage.
-
-### 1. Persistent Storage is Mandatory
-The backend physically saves uploaded PDF files to `backend/data/uploads/` and FAISS vector indices to `backend/data/indexes/`. If you host this backend on a free-tier Platform as a Service (PaaS) like Render or Heroku, they use "ephemeral storage". This means that every time the server goes to sleep due to inactivity, the hard drive is completely wiped clean. Users will lose all their uploaded documents and vector data permanently.
-**Solution:** You must deploy the backend on a Virtual Private Server (VPS) like DigitalOcean, AWS EC2, or Oracle Cloud. Alternatively, if using Render or Railway, you must attach a paid Persistent Disk Volume and configure the `data/` folder to map to that volume.
-
-### 2. Database Hosting
-The application requires a standard PostgreSQL database. You can host this yourself on the same VPS using Docker, or you can use a managed database provider like Supabase or Neon, which offer excellent free tiers. Ensure you update the database credentials in the production environment variables.
-
-### 3. Frontend API Configuration
-Before compiling the frontend for production, you must update the network interceptor. Open `frontend/src/services/api.js` and change the `BASE_URL` from `http://127.0.0.1:5000` to the actual secure HTTPS domain where your backend is hosted.
-
-### 4. Concurrency and Web Workers
-In a production environment, you should not use the built-in Flask development server (`python main.py`). You must run the application using a production WSGI server like Gunicorn or Waitress. Because the backend utilizes background threading for document ingestion (`concurrent.futures.ThreadPoolExecutor`), ensure your WSGI server is configured to support asynchronous threading so that background tasks are not abruptly terminated when the initial HTTP request concludes.
