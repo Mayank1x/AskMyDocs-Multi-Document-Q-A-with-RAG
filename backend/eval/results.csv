@@ -1,0 +1,11 @@
+Question,Expected Keywords,Actual Answer,Passed
+How many days of PTO do I get per year?,"20, twenty, 20 days",,False
+How many PTO days can roll over to the next year?,"5, five",,False
+Do I need a doctor's note for sick leave?,"more than 3, 3 consecutive days, three",,False
+How long is parental leave for a primary caregiver?,"16 weeks, sixteen",,False
+What happens to unused sick leave?,"does not roll over, does not carry over, lose it",,False
+How many public holidays does TechNova observe?,"8, eight",,False
+How many days of bereavement leave are allowed?,"5, five",,False
+How long do I need to work here to get parental leave?,"6 months, six months",,False
+Is Christmas a holiday?,"yes, Christmas Day","Yes, Christmas Day is observed as one of the 8 public holidays by TechNova.",True
+Can I take a 4 day PTO without asking my manager?,"no, approved, manager","No. According to the policy, PTO requests exceeding 3 consecutive days must be approved by your department manager at least two weeks in advance. Therefore, you cannot take a 4-day PTO without your manager's approval.",True

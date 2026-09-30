@@ -1,0 +1,42 @@
+[
+    {
+        "question": "How many days of PTO do I get per year?",
+        "expected_keywords": ["20", "twenty", "20 days"]
+    },
+    {
+        "question": "How many PTO days can roll over to the next year?",
+        "expected_keywords": ["5", "five"]
+    },
+    {
+        "question": "Do I need a doctor's note for sick leave?",
+        "expected_keywords": ["more than 3", "3 consecutive days", "three"]
+    },
+    {
+        "question": "How long is parental leave for a primary caregiver?",
+        "expected_keywords": ["16 weeks", "sixteen"]
+    },
+    {
+        "question": "What happens to unused sick leave?",
+        "expected_keywords": ["does not roll over", "does not carry over", "lose it"]
+    },
+    {
+        "question": "How many public holidays does TechNova observe?",
+        "expected_keywords": ["8", "eight"]
+    },
+    {
+        "question": "How many days of bereavement leave are allowed?",
+        "expected_keywords": ["5", "five"]
+    },
+    {
+        "question": "How long do I need to work here to get parental leave?",
+        "expected_keywords": ["6 months", "six months"]
+    },
+    {
+        "question": "Is Christmas a holiday?",
+        "expected_keywords": ["yes", "Christmas Day"]
+    },
+    {
+        "question": "Can I take a 4 day PTO without asking my manager?",
+        "expected_keywords": ["no", "approved", "manager"]
+    }
+]

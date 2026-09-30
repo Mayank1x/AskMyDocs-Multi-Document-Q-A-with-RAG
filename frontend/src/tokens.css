@@ -1,0 +1,114 @@
+:root {
+  /* Light theme */
+  color-scheme: light;
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-2: #F8FAFC;
+  --sidebar: #F8FAFC;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --text-2: #334155;
+  --text-3: #64748B;
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-tint: #DBEAFE;
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+  --on-accent: #FFFFFF;
+
+  /* Type colors */
+  --type-pdf: #B3392F;
+  --type-docx: #2B5C8A;
+  --type-pptx: #A85416;
+  --type-csv: #2F6B3F;
+  --type-image: #6B4E9B;
+  --type-text: #5F6368;
+
+  /* Shadows and Shape */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px -1px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+}
+
+[data-theme="dark"] {
+  /* Dark theme */
+  color-scheme: dark;
+  --bg: #09090B;
+  --surface: #111113;
+  --surface-2: #1A1A1E;
+  --sidebar: #111113;
+  --border: #27272A;
+  --text: #FAFAFA;
+  --text-2: #A1A1AA;
+  --text-3: #71717A;
+  --accent: #3B82F6;
+  --accent-hover: #60A5FA;
+  --accent-tint: #172554;
+  --success: #4ADE80;
+  --warning: #FBBF24;
+  --danger: #F87171;
+  --on-accent: #FFFFFF;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  line-height: 1.5;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Transitions for theme switching, handled carefully to avoid first-paint flash */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *:before,
+html.theme-transitioning *:after {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease !important;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+}
+
+/* Selection */
+::selection {
+  background: var(--accent-tint);
+  color: var(--text);
+}
