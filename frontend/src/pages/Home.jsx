@@ -197,7 +197,7 @@ const Home = () => {
 
   return (
     <div 
-        className="flex flex-col h-screen w-screen overflow-hidden bg-bg text-text relative"
+        className="flex flex-col h-[100dvh] w-screen overflow-hidden bg-bg text-text relative"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}

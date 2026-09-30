@@ -107,7 +107,7 @@ const PreviewPanel = ({ source, files = [], onClose }) => {
                             }
                             return (
                                 <iframe 
-                                    src={`http://127.0.0.1:5000/api/documents/${matchedFile.id}/file?user_id=${getUserId()}#page=${source.page || 1}`}
+                                    src={`/api/documents/${matchedFile.id}/file?user_id=${getUserId()}#page=${source.page || 1}`}
                                     className="w-full h-full bg-white border border-border rounded shadow-sm"
                                     title="Document Preview"
                                 />

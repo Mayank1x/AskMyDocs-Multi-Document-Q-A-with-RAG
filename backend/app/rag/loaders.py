@@ -13,28 +13,39 @@ import pptx
 import pandas as pd
 from app.models import update_document_status
 
-import io
-from PIL import Image
-import pytesseract
+from google import genai
+from google.genai import types
+import os
 
 def perform_ocr(image_bytes: bytes, ext: str) -> str:
     try:
-        # Explicitly configure path so you don't need to mess with System Environment Variables
-        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-        image = Image.open(io.BytesIO(image_bytes))
-        # Convert to RGB to ensure compatibility
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-        text = pytesseract.image_to_string(image)
-        return text.strip()
+        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            return "[OCR Failed: No Gemini API Key provided]"
+            
+        client = genai.Client(api_key=api_key)
+        mime_type = "image/jpeg" if ext.lower() in ["jpg", "jpeg"] else "image/png"
+        
+        image_part = types.Part.from_bytes(
+            data=image_bytes,
+            mime_type=mime_type
+        )
+        
+        response = client.models.generate_content(
+            model='gemini-3.5-flash',
+            contents=[
+                image_part,
+                "Please extract all readable text from this image exactly as it appears. If the image contains a chart, graph, or diagram, explain it in detail. If there is no text, provide a highly detailed description of the image."
+            ]
+        )
+        return response.text.strip()
     except Exception as e:
-        print(f"Local OCR failed: {e}")
-        return "[Local OCR Failed. Is Tesseract installed?]"
+        print(f"Gemini OCR failed: {e}")
+        return f"[OCR Failed: {str(e)}]"
 
 def perform_image_caption(image_bytes: bytes, ext: str) -> str:
-    # Local image captioning requires a separate model like BLIP.
-    # For now, we will just return a placeholder or disable it.
-    return "[Image captioning disabled for local mode]"
+    # Gemini OCR now handles both extraction and captioning in one pass
+    return ""
 
 # ----------------- Loaders ----------------- #
 
@@ -57,35 +68,28 @@ def load_pdf(filepath: str, doc_id: int, user_id: str) -> List[Document]:
             ))
             
         # 2. Image extraction (for both scanned pages and embedded charts)
-        for image_file_object in page.images:
-            # Simple size filter (if we can infer it, PyPDF doesn't always provide easy w/h without Pillow, but we try)
-            try:
-                # Avoid tiny icons
-                if len(image_file_object.data) < 5000: # rough heuristic: < 5KB is usually a tiny icon
-                    continue
-            except:
-                pass
+        is_scanned_page = len(text.strip()) < config.OCR_TEXT_THRESHOLD
+        
+        # To prevent massive slowdowns on large PDFs, only OCR images if it's a scanned page, 
+        # or if the user explicitly turns on deep image extraction.
+        if is_scanned_page or getattr(config, 'DEEP_IMAGE_OCR', False):
+            for image_file_object in page.images:
+                try:
+                    # Avoid tiny icons
+                    if len(image_file_object.data) < 15000: # Increased heuristic to 15KB to avoid logos
+                        continue
+                except:
+                    pass
+                    
+                ext = image_file_object.name.split('.')[-1].lower()
+                if ext not in ['png', 'jpg', 'jpeg']:
+                    ext = 'png'
                 
-            ext = image_file_object.name.split('.')[-1].lower()
-            if ext not in ['png', 'jpg', 'jpeg']:
-                ext = 'png'
-                
-            # If page had no text, this image is likely the scanned page itself
-            is_scanned_page = len(text.strip()) < config.OCR_TEXT_THRESHOLD
-            
-            ocr_text = perform_ocr(image_file_object.data, ext)
-            if len(ocr_text.strip()) > 20 or is_scanned_page:
-                documents.append(Document(
-                    page_content=ocr_text,
-                    metadata={"doc_id": doc_id, "filename": filename, "page": page_num, "user_id": user_id, "content_type": "ocr"}
-                ))
-            else:
-                # If very little text found and captioning is ON, get a caption
-                caption = perform_image_caption(image_file_object.data, ext)
-                if caption:
+                ocr_text = perform_ocr(image_file_object.data, ext)
+                if len(ocr_text.strip()) > 20 or is_scanned_page:
                     documents.append(Document(
-                        page_content=caption,
-                        metadata={"doc_id": doc_id, "filename": filename, "page": page_num, "user_id": user_id, "content_type": "image_caption"}
+                        page_content=ocr_text,
+                        metadata={"doc_id": doc_id, "filename": filename, "page": page_num, "user_id": user_id, "content_type": "ocr"}
                     ))
                     
     return documents

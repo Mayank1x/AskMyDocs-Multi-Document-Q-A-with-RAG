@@ -1,7 +1,7 @@
 import axios from "axios";
 import { v4 as uuidv4 } from 'uuid';
 
-const BASE_URL = "http://127.0.0.1:5000"; // Replace with your production URL when hosting
+const BASE_URL = ""; // Uses Vite proxy or relative path
 
 // Initialize or get unique user ID
 export const getUserId = () => {
