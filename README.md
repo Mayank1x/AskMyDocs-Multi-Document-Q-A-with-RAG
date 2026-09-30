@@ -1,45 +1,44 @@
 # AskMyDocs (AI Document Summarizer)
 
-A modern, production-ready RAG (Retrieval-Augmented Generation) web application that allows users to instantly chat with and analyze their documents. Built with a highly responsive React frontend and a robust Python/Flask backend.
+A modern, production-ready Retrieval-Augmented Generation (RAG) web application that allows users to instantly chat with and analyze their documents. Built with a highly responsive React frontend and a robust Python and Flask backend.
 
-## 🌟 Key Features
+## Key System Features
 
-- **Zero-Login Multi-Tenancy**: Users can visit the app and instantly start uploading documents. The app assigns anonymous, persistent UUIDs stored in local storage, automatically isolating every user's documents and chat history entirely on the backend without forcing them to create an account.
-- **Smart RAG Pipeline**: Uses a hybrid search approach (FAISS for dense vectors + BM25 for keyword search) over local HuggingFace embeddings (`all-MiniLM-L6-v2`) to achieve highly accurate document retrieval.
-- **Resilient AI Generation**: Integrates with Google's latest Gemini API models (`gemini-3.8-flash`, `gemini-3.5-flash`, `gemini-3.0-flash`). Features a robust automatic retry and fallback mechanism that catches `503 High Demand` or Rate Limit errors and gracefully switches models or delays and retries without breaking the user experience.
-- **Real-time SSE Streaming**: AI answers stream back to the UI token-by-token. If an error occurs mid-stream, it is caught and appended to the UI cleanly.
+- **Zero-Login Multi-Tenancy**: Users can visit the application and instantly start uploading documents. The frontend assigns anonymous, persistent UUIDs stored in browser local storage. Every API request attaches this ID, isolating every user's documents, vector databases, and chat history entirely on the backend without forcing account creation.
+- **Resilient AI Generation**: Integrates with Google's Gemini API models (gemini-3.8-flash, gemini-3.5-flash, gemini-3.0-flash). The backend features an automatic retry and fallback mechanism that catches 503 High Demand or Rate Limit errors and gracefully switches models or delays and retries without breaking the user experience.
+- **Real-time SSE Streaming**: Answers stream back to the User Interface token-by-token using Server-Sent Events. Mid-stream errors are caught and appended to the chat interface cleanly.
 - **Precise Source Attribution**: The AI provides exact snippets of the paragraphs it used to formulate its answer. Users can click on source cards to view the fully extracted text in a dedicated Preview Panel.
-- **Multi-Format Uploads**: Supports PDF, DOCX, PPTX, CSV, Excel, TXT, and Images. Runs background ingestion threads for fast processing without locking the UI.
+- **Multi-Format Background Uploads**: Supports PDF, DOCX, PPTX, CSV, Excel, TXT, and Images. Runs background ingestion threads for fast processing without locking the user interface.
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```mermaid
 graph TD
-    subgraph Frontend [Frontend (React + Vite + Tailwind)]
+    subgraph Frontend
         UI[User Interface]
         API_Service[API Interceptor]
         LocalStore[(Browser Local Storage)]
     end
 
-    subgraph Backend [Backend (Python + Flask)]
+    subgraph Backend
         Router[Flask API Routes]
         MultiTenant[Multi-Tenancy Middleware]
         Ingestion[Background Ingestion Task]
-        RAG[RAG Chain & Fallback Loop]
+        RAG[RAG Chain and Fallback Loop]
         
-        subgraph Storage [Persistent Storage]
+        subgraph Storage
             PG[(PostgreSQL DB)]
             FAISS[(FAISS Vector Stores)]
             Docs[(Uploaded Files)]
         end
     end
     
-    subgraph External [External APIs]
+    subgraph External
         Gemini[Google Gemini API]
         Embeddings[HuggingFace Embeddings]
     end
 
-    UI <-->|SSE Stream & REST| API_Service
+    UI <-->|SSE Stream and REST| API_Service
     LocalStore -.->|Auto-injects X-User-Id| API_Service
     
     API_Service <-->|HTTP Requests| Router
@@ -47,54 +46,39 @@ graph TD
     MultiTenant -->|Isolates by User ID| Ingestion
     MultiTenant -->|Isolates by User ID| RAG
     
-    Ingestion -->|1. Parse & Chunk| Docs
+    Ingestion -->|1. Parse and Chunk| Docs
     Ingestion -->|2. Embed| Embeddings
     Ingestion -->|3. Store Vectors| FAISS
-    Ingestion -->|4. Save Meta| PG
+    Ingestion -->|4. Save Metadata| PG
     
     RAG -->|1. Hybrid Search| FAISS
     RAG -->|2. Search Meta| PG
-    RAG -->|3. Prompt & Context| Gemini
+    RAG -->|3. Prompt and Context| Gemini
     Gemini -->|Streamed Response| RAG
 ```
 
-## 🛠️ Tech Stack
-
-### Frontend
-- **React 19** (Vite)
-- **Tailwind CSS** (for styling, fully responsive across Mobile, Tablet, Desktop)
-- **Lucide React** (icons)
-- **Axios** (with interceptors for UUID attachment)
-
-### Backend
-- **Python 3.9+** & **Flask** (API & SSE streams)
-- **LangChain** (Document loading, chunking, and orchestration)
-- **FAISS** (Local vector database for fast similarity search)
-- **PostgreSQL** (Database for file metadata and user sessions)
-- **Google GenAI SDK** (Gemini 3.x models)
-- **Sentence-Transformers** (Local HuggingFace embeddings)
-
-## 🚀 Setup & Deployment
+## Setup Instructions
 
 ### 1. Prerequisites
-- Python 3.9+
-- Node.js 18+
-- PostgreSQL database running locally (or via Supabase)
+- Python 3.9 or higher
+- Node.js 18 or higher
+- PostgreSQL database running locally (or via a cloud provider like Supabase)
 
 ### 2. Backend Setup
+Navigate to the backend directory and set up a virtual environment:
 ```bash
 cd backend
 python -m venv venv
 
 # Windows
 venv\Scripts\activate
-# Mac/Linux
+# Mac or Linux
 source venv/bin/activate
 
 pip install -r requirements.txt
 ```
 
-Create a `.env` file in the `backend` folder:
+Create a `.env` file in the `backend` folder containing your credentials:
 ```env
 DB_NAME=askmydocs
 DB_USER=postgres
@@ -104,7 +88,7 @@ DB_PORT=5432
 GEMINI_API_KEY=your_gemini_api_key
 ```
 
-Run the server:
+Run the API server:
 ```bash
 python main.py
 ```
@@ -116,9 +100,21 @@ cd frontend
 npm install
 npm run dev
 ```
-Visit `http://localhost:5173` in your browser.
+Visit the local server address provided by Vite in your browser.
 
-## ⚠️ Notes for Production Deployment
-If you intend to host this application publicly (e.g., on Render, Railway, or AWS):
-1. **Persistent Storage is Mandatory**: The backend saves physical files to `backend/data/uploads/` and FAISS vector indices to `backend/data/indexes/`. If you host this on a free tier with "ephemeral storage" (where the disk wipes itself when the server sleeps), users will lose their uploaded documents! Use a VPS (DigitalOcean/Oracle) or a persistent volume.
-2. **Update API URLs**: Before deploying the frontend to Vercel/Netlify, remember to change the `BASE_URL` in `frontend/src/services/api.js` from `http://127.0.0.1:5000` to your live backend URL.
+## Notes for Production Deployment
+
+Deploying this application requires specific architectural considerations due to the nature of local vector storage.
+
+### 1. Persistent Storage is Mandatory
+The backend physically saves uploaded PDF files to `backend/data/uploads/` and FAISS vector indices to `backend/data/indexes/`. If you host this backend on a free-tier Platform as a Service (PaaS) like Render or Heroku, they use "ephemeral storage". This means that every time the server goes to sleep due to inactivity, the hard drive is completely wiped clean. Users will lose all their uploaded documents and vector data permanently.
+**Solution:** You must deploy the backend on a Virtual Private Server (VPS) like DigitalOcean, AWS EC2, or Oracle Cloud. Alternatively, if using Render or Railway, you must attach a paid Persistent Disk Volume and configure the `data/` folder to map to that volume.
+
+### 2. Database Hosting
+The application requires a standard PostgreSQL database. You can host this yourself on the same VPS using Docker, or you can use a managed database provider like Supabase or Neon, which offer excellent free tiers. Ensure you update the database credentials in the production environment variables.
+
+### 3. Frontend API Configuration
+Before compiling the frontend for production, you must update the network interceptor. Open `frontend/src/services/api.js` and change the `BASE_URL` from `http://127.0.0.1:5000` to the actual secure HTTPS domain where your backend is hosted.
+
+### 4. Concurrency and Web Workers
+In a production environment, you should not use the built-in Flask development server (`python main.py`). You must run the application using a production WSGI server like Gunicorn or Waitress. Because the backend utilizes background threading for document ingestion (`concurrent.futures.ThreadPoolExecutor`), ensure your WSGI server is configured to support asynchronous threading so that background tasks are not abruptly terminated when the initial HTTP request concludes.
